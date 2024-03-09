@@ -1,12 +1,17 @@
+import { config as dotEnvConfig } from 'dotenv';
 import express, { Request, Response } from 'express';
 
-const PORT = 1729;
+import { ensureConfigSuccess, getEnvValue } from './utils';
+
+ensureConfigSuccess(dotEnvConfig());
+
+const port = getEnvValue('PORT', 1729);
 const app = express();
 
 app.get('/', (_req: Request, resp: Response) => {
   resp.send('Hello, world!');
 });
 
-app.listen(PORT, () => {
-  console.log(`server listening on ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server listening on ${port}`);
 });
