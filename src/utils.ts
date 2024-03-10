@@ -25,3 +25,7 @@ export function getEnvValue(
   }
   return numValue;
 }
+
+export function parseUUIDV4(uuid: string): Buffer {
+  return Buffer.from(uuid.split('-').join(''), 'hex');
+}

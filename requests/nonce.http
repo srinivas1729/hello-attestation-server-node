@@ -1,0 +1,18 @@
+GET http://localhost:1729/status HTTP/1.1
+x-client-id: random
+x-request-id: random
+
+###
+
+POST http://localhost:1729/newAttestationNonce HTTP/1.1
+x-client-id: random-guid
+x-request-id: random-guid
+content-type: application/json
+
+{
+    "forRequestId": "another-guid"
+}
+
+
+###
+

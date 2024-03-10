@@ -1,17 +1,35 @@
 import { config as dotEnvConfig } from 'dotenv';
-import express, { Request, Response } from 'express';
+import express from 'express';
 
 import { ensureConfigSuccess, getEnvValue } from './utils';
+import { attestationRouter } from './attestation';
+import { ensureAndIncludeIds } from './request_ids';
+import { setAppDao } from './dao';
+import { InMemoryDao } from './in_memory_dao';
+import { statusRouter } from './status';
 
 ensureConfigSuccess(dotEnvConfig());
 
 const port = getEnvValue('PORT', 1729);
 const app = express();
 
-app.get('/', (_req: Request, resp: Response) => {
-  resp.send('Hello, world!');
+console.log('Server starting...');
+console.log('Using InMemory DAO');
+setAppDao(new InMemoryDao());
+
+app.use(express.json());
+app.use(ensureAndIncludeIds);
+
+app.use(statusRouter);
+app.use(attestationRouter);
+
+const server = app.listen(port, () => {
+  console.log(`Server listening on ${port}`);
 });
 
-app.listen(port, () => {
-  console.log(`Server listening on ${port}`);
+process.on('SIGTERM', () => {
+  console.log('Handling terminate signal!');
+  server.close(() => {
+    console.log('Server stopped');
+  });
 });
