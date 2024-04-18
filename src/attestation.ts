@@ -29,7 +29,9 @@ attestationRouter.post(
         forRequestId,
         nonce,
       );
-
+      console.log(
+        `Generated and returning nonce for ${reqWithIds.clientId}/${forRequestId}`,
+      );
       resp.json({
         nonce: nonce,
       });
@@ -88,7 +90,8 @@ attestationRouter.post(
         result.receipt,
         0,
       );
-      resp.status(200);
+      console.log(`Saved appAttestKey for ${reqWithIds.clientId}`);
+      resp.status(200).json({});
     } catch (error) {
       console.error('Unexpected error', error);
       resp.status(500);
@@ -105,3 +108,39 @@ export function attestationChecker(
   res.send(`req size: ${req.body.size}`);
   next();
 }
+
+export const testApiRouter = express.Router();
+
+testApiRouter.post(
+  '/testPutAttestationNonce',
+  async (req: Request, resp: Response) => {
+    const reqWithIds = req as RequestWithIds;
+
+    const { forRequestId, nonce } = req.body;
+    if (typeof forRequestId !== 'string' || typeof nonce !== 'string') {
+      console.warn('forRequestId/nonce not provided!');
+      resp
+        .status(400)
+        .json({ error: 'forRequestId not provided in body json' });
+      return;
+    }
+
+    try {
+      await getAppDao().putAttestationNonce(
+        reqWithIds.clientId,
+        forRequestId,
+        nonce,
+      );
+
+      console.log(
+        `Saved test nonce for ${reqWithIds.clientId}/${forRequestId}`,
+      );
+      resp.json({
+        nonce: nonce,
+      });
+    } catch (error) {
+      console.error('Unexpected error', error);
+      resp.status(500);
+    }
+  },
+);

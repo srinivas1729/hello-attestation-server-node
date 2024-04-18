@@ -2,7 +2,7 @@ import { config as dotEnvConfig } from 'dotenv';
 import express from 'express';
 
 import { ensureConfigSuccess, getEnvValue } from './utils';
-import { attestationRouter } from './attestation';
+import { attestationRouter, testApiRouter } from './attestation';
 import { ensureAndIncludeIds } from './request_ids';
 import { setAppDao } from './dao';
 import { InMemoryDao } from './in_memory_dao';
@@ -22,6 +22,8 @@ app.use(ensureAndIncludeIds);
 
 app.use(statusRouter);
 app.use(attestationRouter);
+// TODO: This should only be registered in test env.
+app.use(testApiRouter);
 
 const server = app.listen(port, () => {
   console.log(`Server listening on ${port}`);
