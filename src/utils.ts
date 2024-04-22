@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { DotenvConfigOutput } from 'dotenv';
 
 export function ensureConfigSuccess(output: DotenvConfigOutput) {
@@ -24,6 +25,12 @@ export function getEnvValue(
     process.exit(1);
   }
   return numValue;
+}
+
+export async function getSHA256(data: Buffer): Promise<Buffer> {
+  const hash = createHash('sha256');
+  hash.update(data);
+  return hash.digest();
 }
 
 export function parseUUIDV4(uuid: string): Buffer {

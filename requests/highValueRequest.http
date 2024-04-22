@@ -1,0 +1,14 @@
+POST http://localhost:1729/highValueRequest HTTP/1.1
+x-client-id: random-guid
+x-request-id: random-guid
+content-type: application/json
+
+{
+    "action": "getGameLevel",
+    "levelId": 1234,
+    "attestationNonce": "challenge-uuid"
+}
+
+
+###
+

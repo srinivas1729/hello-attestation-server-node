@@ -7,6 +7,7 @@ import { ensureAndIncludeIds } from './request_ids';
 import { setAppDao } from './dao';
 import { InMemoryDao } from './in_memory_dao';
 import { statusRouter } from './status';
+import { highValueApiRouter } from './api';
 
 ensureConfigSuccess(dotEnvConfig());
 
@@ -22,6 +23,7 @@ app.use(ensureAndIncludeIds);
 
 app.use(statusRouter);
 app.use(attestationRouter);
+app.use(highValueApiRouter);
 // TODO: This should only be registered in test env.
 app.use(testApiRouter);
 

@@ -1,10 +1,15 @@
-import { AppInfo, verifyAttestation } from 'appattest-checker-node';
+import {
+  AppInfo,
+  verifyAssertion,
+  verifyAttestation,
+} from 'appattest-checker-node';
 import express, { NextFunction, Request, Response } from 'express';
+import stringify from 'json-stable-stringify';
 import { randomUUID } from 'crypto';
 
 import { RequestWithIds } from './request_ids';
 import { getAppDao } from './dao';
-import { parseUUIDV4 } from './utils';
+import { getSHA256, parseUUIDV4 } from './utils';
 
 export const attestationRouter = express.Router();
 
@@ -46,8 +51,9 @@ attestationRouter.post(
   '/registerAppAttestKey',
   async (req: Request, resp: Response) => {
     const reqWithIds = req as RequestWithIds;
+    // TODO: move to env var
     const appInfo: AppInfo = {
-      appId: '979F6L8R8M.org.reactjs.native.example.RNClientAttest',
+      appId: '979F6L8R8M.org.reactjs.native.example.RNHelloAttestationClient',
       developmentEnv: true,
     };
 
@@ -99,14 +105,92 @@ attestationRouter.post(
   },
 );
 
-export function attestationChecker(
+export async function attestationChecker(
   req: Request,
-  res: Response,
+  resp: Response,
   next: NextFunction,
 ) {
-  // TODO: actual impl
-  res.send(`req size: ${req.body.size}`);
+  console.log(`Checking request: ${req.query}`);
+
+  const clientAttestationBase64 = req.header('x-client-attestation');
+  if (!clientAttestationBase64) {
+    resp.status(400).json({
+      error: 'Missing client-attestation',
+    });
+    return;
+  }
+
+  const reqWithIds = req as RequestWithIds;
+  const nonceCheckPass = await performNonceChecks(reqWithIds, resp);
+  if (!nonceCheckPass) {
+    return;
+  }
+
+  const appAttestKey = await getAppDao().getAppAttestKey(reqWithIds.clientId);
+  if (!appAttestKey) {
+    resp.status(400).json({
+      error: 'Unknown clientId (no appAttestKey found) !',
+    });
+    return;
+  }
+
+  const clientDataHash = await getSHA256(Buffer.from(stringify(req.body)));
+  const verifyResult = await verifyAssertion(
+    clientDataHash,
+    appAttestKey.publicKeyPem,
+    '979F6L8R8M.org.reactjs.native.example.RNHelloAttestationClient', // TODO: move to env var
+    Buffer.from(clientAttestationBase64, 'base64'),
+  );
+  if ('verifyError' in verifyResult) {
+    resp.status(400).json({
+      error: `Could not verify request (${verifyResult.verifyError}) !`,
+    });
+    return;
+  }
+  if (verifyResult.signCount <= appAttestKey.attestCount) {
+    resp.status(400).json({
+      error: `Could not verify request (signCount issues) !`,
+    });
+    return;
+  }
+  appAttestKey.attestCount = verifyResult.signCount;
+  await getAppDao().putAppAttestKey(
+    reqWithIds.clientId,
+    appAttestKey.publicKeyPem,
+    appAttestKey.receipt,
+    appAttestKey.attestCount,
+  );
+  console.log('Successfully verified client-attestation');
+
   next();
+}
+
+async function performNonceChecks(
+  reqWithIds: RequestWithIds,
+  resp: Response,
+): Promise<boolean> {
+  const nonce = await getAppDao().getAttestationNonce(
+    reqWithIds.clientId,
+    reqWithIds.requestId,
+  );
+  if (!nonce) {
+    console.warn('No nonce found for clientId/reqiuestId');
+    resp.status(400).json({ error: 'Nonce not found for request' });
+    return false;
+  }
+
+  const { attestationNonce: clientNonce } = reqWithIds.body;
+  if (typeof clientNonce !== 'string') {
+    console.warn('No challenge provided in request body!');
+    resp.status(400).json({ error: 'Challenge not included in request body' });
+    return false;
+  }
+  if (clientNonce !== nonce) {
+    console.warn('Client provided nonce does not match!');
+    resp.status(400).json({ error: 'Client provided nonce does not match!' });
+    return false;
+  }
+  return true;
 }
 
 export const testApiRouter = express.Router();
