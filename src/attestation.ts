@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import { RequestWithIds } from './request_ids';
 import { getAppDao } from './dao';
 import { getSHA256, parseUUIDV4 } from './utils';
+import { getConfig } from './config';
 
 export const attestationRouter = express.Router();
 
@@ -51,10 +52,10 @@ attestationRouter.post(
   '/registerAppAttestKey',
   async (req: Request, resp: Response) => {
     const reqWithIds = req as RequestWithIds;
-    // TODO: move to env var
+    const config = getConfig();
     const appInfo: AppInfo = {
-      appId: '979F6L8R8M.org.reactjs.native.example.RNHelloAttestationClient',
-      developmentEnv: true,
+      appId: config.iosAppId,
+      developmentEnv: config.developmentEnv,
     };
 
     const { keyId, attestationBase64 } = req.body;
@@ -138,7 +139,7 @@ export async function attestationChecker(
   const verifyResult = await verifyAssertion(
     clientDataHash,
     appAttestKey.publicKeyPem,
-    '979F6L8R8M.org.reactjs.native.example.RNHelloAttestationClient', // TODO: move to env var
+    getConfig().iosAppId,
     Buffer.from(clientAttestationBase64, 'base64'),
   );
   if ('verifyError' in verifyResult) {

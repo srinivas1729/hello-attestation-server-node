@@ -1,17 +1,16 @@
-import { config as dotEnvConfig } from 'dotenv';
 import express from 'express';
 
-import { ensureConfigSuccess, getEnvValue } from './utils';
 import { attestationRouter, testApiRouter } from './attestation';
 import { ensureAndIncludeIds } from './request_ids';
 import { setAppDao } from './dao';
 import { InMemoryDao } from './in_memory_dao';
 import { statusRouter } from './status';
 import { highValueApiRouter } from './api';
+import { getConfig, initConfig } from './config';
 
-ensureConfigSuccess(dotEnvConfig());
+initConfig();
+const config = getConfig();
 
-const port = getEnvValue('PORT', 1729);
 const app = express();
 
 console.log('Server starting...');
@@ -27,8 +26,8 @@ app.use(highValueApiRouter);
 // TODO: This should only be registered in test env.
 app.use(testApiRouter);
 
-const server = app.listen(port, () => {
-  console.log(`Server listening on ${port}`);
+const server = app.listen(config.port, () => {
+  console.log(`Server listening on ${config.port}`);
 });
 
 process.on('SIGTERM', () => {
