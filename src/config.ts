@@ -4,12 +4,14 @@ export interface Config {
   port: number;
   iosAppId: string;
   developmentEnv: boolean;
+  supportTestApis: boolean;
 }
 
 // EK prefix => Env Key
 const EK_PORT = 'PORT';
 const EK_IOS_APP_ID = 'IOS_APP_ID';
 const EK_DEVELOPMENT_ENV = 'DEVELOPMENT_ENV';
+const EK_SUPPORT_TEST_APIS = 'SUPPORT_TEST_APIS';
 
 const REQUIRED_KEYS = [EK_IOS_APP_ID, EK_DEVELOPMENT_ENV];
 
@@ -39,10 +41,14 @@ export function initConfig(): void {
   const port = parseNumber(output.parsed[EK_PORT] ?? '1729');
   const iosAppId = output.parsed[EK_IOS_APP_ID];
   const developmentEnv = parseBoolean(output.parsed[EK_DEVELOPMENT_ENV]);
+  const supportTestApis = parseBoolean(
+    output.parsed[EK_SUPPORT_TEST_APIS] ?? 'false',
+  );
   config = {
     port,
     iosAppId,
     developmentEnv,
+    supportTestApis,
   };
   console.log('Intialized config!');
 }

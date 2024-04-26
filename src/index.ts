@@ -22,9 +22,12 @@ app.use(ensureAndIncludeIds);
 
 app.use(statusRouter);
 app.use(attestationRouter);
+if (config.supportTestApis) {
+  console.log('Supporting Test APIs');
+  app.use(testApiRouter);
+}
+
 app.use(highValueApiRouter);
-// TODO: This should only be registered in test env.
-app.use(testApiRouter);
 
 const server = app.listen(config.port, () => {
   console.log(`Server listening on ${config.port}`);
