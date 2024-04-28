@@ -111,7 +111,7 @@ export async function attestationChecker(
   resp: Response,
   next: NextFunction,
 ) {
-  console.log(`Checking request: ${req.query}`);
+  console.log(`Checking request: ${req.path}`);
 
   const clientAttestationBase64 = req.header('x-client-attestation');
   if (!clientAttestationBase64) {

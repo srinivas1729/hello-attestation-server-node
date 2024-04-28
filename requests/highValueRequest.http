@@ -1,12 +1,32 @@
-POST http://localhost:1729/highValueRequest HTTP/1.1
-x-client-id: random-guid
-x-request-id: random-guid
+# To run these, first run request from registerAppAttestKey
+
+# # Run this request first it saves nonce value.
+
+POST http://localhost:1729/testPutAttestationNonce HTTP/1.1
+x-client-id: client-id-1
+x-request-id: request-id-12
 content-type: application/json
+
+{
+    "forRequestId": "request-id-13",
+    "nonce": "1a7c84a2-3ae2-44ac-b83a-2be7e6312f13"
+}
+
+###
+
+# Invokes a high value request with Client attestation. Server should validate integrity of the request.
+
+POST http://localhost:1729/highValueRequest HTTP/1.1
+content-type: application/json
+x-client-id: client-id-1
+x-request-id: request-id-13
+x-client-attestation: omlzaWduYXR1cmVYSDBGAiEA9leeE19cEOjRaol1Xk4JaxZYCh18GMOI4M2gi4BxLccCIQC0cQ15V0xkicio3INFL+TWjdeVHPpuznfA76J8YEc0pXFhdXRoZW50aWNhdG9yRGF0YVgl5rZMmuZkfMxR0O1k8DI4JoS3SME3EsIcxXaa3pW6gLRAAAAAAQ==
+
 
 {
     "action": "getGameLevel",
     "levelId": 1234,
-    "attestationNonce": "challenge-uuid"
+    "attestationNonce": "1a7c84a2-3ae2-44ac-b83a-2be7e6312f13"
 }
 
 
