@@ -1,11 +1,17 @@
 import express, { Request, Response } from 'express';
 import { attestationChecker } from './attestation';
 
+// This file sets up a sample High value request that is guarded using
+// attestationChecker middleware.
+
 export const highValueApiRouter = express.Router();
 
-// Middleware to check Client attestation/integrity on requests.
+// Sets up attestationChecker to check the integrity of client requests.
 highValueApiRouter.use(attestationChecker);
 
+// Sample high value request. It actually doesn't do anything other than
+// check arguments and log the request. Ideally this would be doing something
+// sensitive.
 highValueApiRouter.post(
   '/highValueRequest',
   async (req: Request, resp: Response) => {

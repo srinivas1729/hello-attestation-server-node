@@ -12,8 +12,10 @@ import { getAppDao } from './dao';
 import { getSHA256, parseUUIDV4 } from './utils';
 import { getConfig } from './config';
 
+// The following sets up Router to handle Attestation specific routes/operations.
 export const attestationRouter = express.Router();
 
+// Used by client to request a new nonce/challenge for Attestation.
 attestationRouter.post(
   '/newAttestationNonce',
   async (req: Request, resp: Response) => {
@@ -48,6 +50,7 @@ attestationRouter.post(
   },
 );
 
+// Used by client to register a new IOS App Attest Key.
 attestationRouter.post(
   '/registerAppAttestKey',
   async (req: Request, resp: Response) => {
@@ -106,6 +109,9 @@ attestationRouter.post(
   },
 );
 
+// Middleware function that other Routers can use to check the integrity of the client
+// invoking some operation. If the integrity cannot be verified, this middleware will
+// fail the request. Otherwise it lets the request run.
 export async function attestationChecker(
   req: Request,
   resp: Response,
@@ -194,8 +200,12 @@ async function performNonceChecks(
   return true;
 }
 
+// The following sets up Router for test purposes. These API's are only needed
+// in a test environment.
 export const testApiRouter = express.Router();
 
+// Used by Test env client to write a known nonce to the store. Nonces are normally
+// randomly generated and returned to real clients. See newAttestationNonce above.
 testApiRouter.post(
   '/testPutAttestationNonce',
   async (req: Request, resp: Response) => {
