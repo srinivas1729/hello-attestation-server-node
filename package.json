@@ -1,6 +1,6 @@
 {
   "name": "hello-attestation-server-node",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Example Node+Express based server using Attestation to verify client invoking APIs",
   "author": "Srinivas Visvanathan",
   "license": "Apache-2.0",
